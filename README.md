@@ -6,11 +6,13 @@
 - **Motor sweeping:** *sweep.cpp* Moves motors back and forth in a loop. Arm rotates back and forth and bends elbow
 - **LCD screen:** *helloLCD.cpp* Prints 'hello world' to the LCD screen on board
 - **Server:** *servertest.cpp* Sends values to the esp32 board and displays it on the LCD screen
+
 **Source:**
 - **Webserver:** *server.cpp* ESP32 host runs webserver and takes values sent via http by client (user on laptop)
 - **Forward Kinematics:** *fwdkin.cpp*, can run independently of webserver (hardcode values)
 - **Inverse Kinematics:** *invkin.cpp*, can run independently of webserver (hardcode values)
 - *main.cpp* void setup and loop, takes data from webserver and calls invkin. Allows users to log onto the robot by typing in the IP address and send commands
+
 **Libraries:**
 - *LCD screen*
 - *Adafruit PWM Drivers*
@@ -34,6 +36,7 @@
 - Base motor:
 - Arm motors and aluminum attachments:
 **Electronics:**
+- Motor encoder: https://www.sameskydevices.com/product/resource/digikey3dmodel/amt10-series
 - Motor controller:https://grabcad.com/library/servo-ds3218mg-1
 - Breadboard:
 - 16x2 LCD screen:
