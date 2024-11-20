@@ -11,21 +11,23 @@
 - **Webserver:** *server.cpp* ESP32 host runs webserver and takes values sent via http by client (user on laptop)
 - **Forward Kinematics:** *fwdkin.cpp*, can run independently of webserver (hardcode values)
 - **Inverse Kinematics:** *invkin.cpp*, can run independently of webserver (hardcode values)
-- *main.cpp* void setup and loop, takes data from webserver and calls invkin. Allows users to log onto the robot by typing in the IP address and send commands
+- *main.cpp* void setup and loop, takes data from webserver and calls invkin. Allows users to log onto the robot by typing in the IP address and send commands. Also updates the values on the LCD screen in real time
 
 **Libraries:**
-- *LCD screen*
-- *Adafruit PWM Drivers*
-- *I2C (Wire)*
+- *LiquidCrustal* for displaying motor location values on the robot's on-board screen
+- *Adafruit PWM Servo Driver*
+- *Adafruit BusIO* (Dependent for servo driver library above)
 
 # Hardware:
-## Electronics: At the base of the arm, you will find a breadboard circuit containing the following:
+## Electronics: 
+At the base of the arm, you will find a breadboard circuit containing the following:
 - **Microcontroller:** *ESP-WROOM-32 Board* by Espressif. Known as ESP32dev on PlatformIO/ArduinoIDE.
 - **Motor controller:** *PCA9685* PWM motor controller board
 - **Motor encoder:** *AMT103-V* Shaft encoders
 - **Power supply:** 5V 10A DC supply with breadboard adapter
 
-## Mechanical: The arm is powered by 3 motors and is supported by two identical PDA 3D printed linkages
+## Mechanical: 
+The arm is powered by 3 motors and is supported by two identical PDA 3D printed linkages
 - **Base/Shoulder motor:** 20kg DS3218 digital servo motor
 - **Elbow and wrist motor:** 20kg RDS3218 robot digital servo motors
 
@@ -33,13 +35,13 @@
 ## CAD Models:
   Below is a list of CAD models we borrowed from online. The base and linkages were created by us with the help of these models to be printed in the Elko Engineering garage
 **Motors:**
-- Base motor:
-- Arm motors and aluminum attachments:
+- Base motor: https://grabcad.com/library/servo-motor-servo-20kg-1
+- Arm motors and aluminum attachments: https://www.crealitycloud.com/model-detail/64dcf95c47473cf6002586b4
 **Electronics:**
 - Motor encoder: https://www.sameskydevices.com/product/resource/digikey3dmodel/amt10-series
 - Motor controller:https://grabcad.com/library/servo-ds3218mg-1
-- Breadboard:
-- 16x2 LCD screen:
+- Breadboard: https://grabcad.com/library/breadboard-15
+- 16x2 LCD screen: https://grabcad.com/library/16-x-2-lcd-display-module
 
 ## Research:
 
