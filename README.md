@@ -34,9 +34,11 @@ The arm is powered by 3 motors and is supported by two identical PDA 3D printed 
 # Resources:
 ## CAD Models:
   Below is a list of CAD models we borrowed from online. The base and linkages were created by us with the help of these models to be printed in the Elko Engineering garage
+
 **Motors:**
 - Base motor: https://grabcad.com/library/servo-motor-servo-20kg-1
 - Arm motors and aluminum attachments: https://www.crealitycloud.com/model-detail/64dcf95c47473cf6002586b4
+
 **Electronics:**
 - Motor encoder: https://www.sameskydevices.com/product/resource/digikey3dmodel/amt10-series
 - Motor controller:https://grabcad.com/library/servo-ds3218mg-1
