@@ -1,10 +1,13 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+#include <WiFi.h>
+#include <WebServer.h>
+#include <tcpip_adapter.h>
+#include "secrets.h";
 
-const char* ssid = "Jasmine";
+tcpip_adapter_ip_info_t ipInfo;
+char ipBuffer[256];
 
-ESP8266WebServer server(80); // server on port 80
+WebServer server(80); // server on port 80
 
 // Variables to hold the five values
 String base = "0";
@@ -12,6 +15,9 @@ String elbow = "0";
 String wrist = "0";
 
 void handleRoot() {
+  tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
+  sprintf(ipBuffer, "\n\n%x", ipInfo.ip.addr);
+
   String message;
   
   // Check if each value parameter is in the URL and update variables
@@ -26,7 +32,7 @@ void handleRoot() {
   Serial.println("Wrist motor angle: " + wrist);
 
   // Send the values serially to Arduino
-  Serial.print(base + "," + elbow + "," + wrist + "," + vexArm + "," + flipArm + "\n");
+  // Serial.print(base + "," + elbow + "," + wrist + "," + vexArm + "," + flipArm + "\n");
 
   // Create HTML form for submitting values
   message = "<form method='GET' action='/'>";
@@ -42,13 +48,14 @@ void handleRoot() {
 
 void setup() {
   Serial.begin(9600);
-  
+
+
   // Connect to Wi-Fi
-  WiFi.begin(ssid);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
   
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+      delay(500);
     Serial.print(".");
   }
 
