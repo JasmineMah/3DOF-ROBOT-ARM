@@ -15,10 +15,24 @@ void setup() {
 
 }
 
-void newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
+/// @brief Calculates the norm of a 1x3 vector.
+/// @param v 
+/// @return The norm.
+float calculateNorm(BLA::Matrix<3> v) {
+    BLA::Matrix<1> inner = ~v * v;
+    return sqrt(inner(0));
+}
+
+/// @brief Performs Newton's method for inverse kinematics. 
+/// @param Xt Target point.
+/// @param max_iter Max number of iterations allowed.
+/// @param threshold Error allowed in X unit.
+/// @return Whether or not the movement was successful.
+bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
     // get your angles
 
     // --- algorithm ---
+    // definitions:
     // X: double[] = [x y z]
     // Q: double[] = [m1, m2, ..., mn]
     // k: int
@@ -30,44 +44,56 @@ void newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
     // if norm(E) < threshold EXIT
     // dQk = J^-1 x E
     // Qk+1 = Qk + dQk
+    // updateJacobian()
+    // end while
 
     // might need to estimate initial Jacobian; move like you did with visual servoing and use forward kinematics instead.
     int k = 0;
-    BLA::Matrix<3> E, X;
+    BLA::Matrix<3> E, X, dQ;
     BLA::Matrix<3, 3> J;
-    std::vector<double> angles = {1.0f, 2.0f, 3.0f}; 
+    std::vector<double> Q = {1.0f, 2.0f, 3.0f}; 
+
 
     estimateInitialJacobian();
 
     while (k < max_iter) {
         // get angles from the motor encoders
+        // Q = getMotorAnglesOrSomething();
 
         // calculate error
-        X = forwardKinematics(angles);
+        X = forwardKinematics(Q);
         E = Xt - X;
 
         // check threshold
         if (calculateNorm(E) < threshold) {
-            break;
+            return true;
         }
 
         // get dQ from J
-
+        // NOTE this can get really bad; singular matrix moment
+        try {
+            dQ = BLA::Inverse(J) * E; // TODO: Handle the case where the matrix is singular.
+        } catch(...) {
+            Serial.println("Uh oh");
+            return false;
+        }
 
         // move motors by dQ
-
+        // moveMotorAnglesOrSomething(dQ);
 
         // recompute the jacobian using partial derivatives
-        
+        // J = recomputeJacobian(Q);
     }
 
+    return false;
+
 
 }
 
-float calculateNorm(BLA::Matrix<3> m) {
-    BLA::Matrix<1> inner = ~m * m;
-    return sqrt(inner(0));
-}
+/*
+NOTE: Angles are to be converted to RADIAN only when we intend to
+calculate them. Otherwise, they should be in degrees.
+*/
 
 void loop() {
 
