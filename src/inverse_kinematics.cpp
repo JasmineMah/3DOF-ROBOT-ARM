@@ -29,7 +29,6 @@ float calculateNorm(BLA::Matrix<3> v) {
 /// @param threshold Error allowed in X unit.
 /// @return Whether or not the movement was successful.
 bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
-    // get your angles
 
     // --- algorithm ---
     // definitions:
@@ -37,7 +36,7 @@ bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
     // Q: double[] = [m1, m2, ..., mn]
     // k: int
     // max_iter: int
-    // threshold: float
+    // threshold: double
 
     // while k < max_iter
     // E = X* - Xk
@@ -47,14 +46,12 @@ bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
     // updateJacobian()
     // end while
 
-    // might need to estimate initial Jacobian; move like you did with visual servoing and use forward kinematics instead.
     int k = 0;
-    BLA::Matrix<3> E, X, dQ;
+    BLA::Matrix<3> E, X, Q, dQ;
     BLA::Matrix<3, 3> J;
-    std::vector<double> Q = {1.0f, 2.0f, 3.0f}; 
+    Q = {1.0f, 2.0f, 3.0f};
 
-
-    estimateInitialJacobian();
+    J = estimateInitialJacobian();
 
     while (k < max_iter) {
         // get angles from the motor encoders
@@ -70,7 +67,7 @@ bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
         }
 
         // get dQ from J
-        // NOTE this can get really bad; singular matrix moment
+        // NOTE: this can get really bad; singular matrix moment
         try {
             dQ = BLA::Inverse(J) * E; // TODO: Handle the case where the matrix is singular.
         } catch(...) {
@@ -79,10 +76,12 @@ bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
         }
 
         // move motors by dQ
+        // this can be done in parallel, maybe
         // moveMotorAnglesOrSomething(dQ);
 
-        // recompute the jacobian using partial derivatives
+        // recompute the Jacobian
         // J = recomputeJacobian(Q);
+        k++;
     }
 
     return false;
