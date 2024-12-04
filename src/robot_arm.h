@@ -28,20 +28,23 @@ double rad2deg(double theta) {
 /// It is assumed that the motors rotate above the Z, Y, and Z-axes, respectively.
 /// @param angles Motor angles.
 /// @return The point.
-BLA::Matrix<3> forwardKinematics(std::vector<double> angles) {
-    std::for_each(angles.begin(), angles.end(), &deg2rad);
+BLA::Matrix<3> forwardKinematics(BLA::Matrix<3> angles) {
+    double theta1 = angles(0) * DEG_TO_RAD;
+    double theta2 = angles(1) * DEG_TO_RAD;
+    double theta3 = angles(2) * DEG_TO_RAD;
 
-    double x = L1 * cos(angles[0]) + L2 * cos(angles[0]) * cos(angles[1]) +
-               L3 * cos(angles[0]) * cos(angles[1] + angles[2]);
+    // 2DOF arm position for the elbow and wrist in the XZ plane
+    // local coordinates from second joint
+    double x_l =      L2 * cos(theta2) + L3 * cos(theta2 + theta3);
+    double z_l = L1 + L2 * sin(theta2) + L3 * sin(theta2 + theta3);
 
-    double y = L1 * sin(angles[0]) + L2 * sin(angles[0]) * cos(angles[1]) +
-               L3 * sin(angles[0]) * cos(angles[1] + angles[2]);
+    // apply rotation from the first joint (rotation along the z-axis)
+    double x_w = cos(theta1) * x_l;
+    double y_w = sin(theta1) * x_l;
+    double z_w = z_l;
 
-    double z = L2 * sin(angles[1]) + L3 * sin(angles[2] + angles[3]);
-
-    return BLA::Matrix<3>{x, y, z};
+    return BLA::Matrix<3>{x_w, y_w, z_w};
 }
-
 
 BLA::Matrix<3,3> estimateInitialJacobian() {
     BLA::Matrix<3, 3> J = BLA::Eye<3,3>();
@@ -49,29 +52,53 @@ BLA::Matrix<3,3> estimateInitialJacobian() {
     // use forward kinematics to estimate the change.
     double dX, dY, dZ;
 
-    // first column first motor
+    // first column: first motor
 
-    // second column second motor
+    // second column: second motor
 
-    // third column third motor
+    // third column: third motor
+
+    for (int i = 0; i < 3; i++) {
+        if (i == 0) {
+            // moveMotorAnglesOrSomething()
+            // dX, dY, dZ: initial movement from motor 1
+        } else {
+            // assign dX, dY, dZ by subtracting current 
+        }
+    }
 }
 
 BLA::Matrix<3,3> recomputeJacobian(BLA::Matrix<3> angles) {
     
+    double theta1 = angles(0) * DEG_TO_RAD;
+    double theta2 = angles(1) * DEG_TO_RAD;
+    double theta3 = angles(2) * DEG_TO_RAD;
+
     BLA::Matrix<3,3> J;
-
-    // TODO: Convert to radian
-
-    double theta1 = angles(0), theta2 = angles(1), theta3 = angles(2);
 
     double c1 = cos(theta1), s1 = sin(theta1);
     double c2 = cos(theta2), s2 = sin(theta2);
     double c23 = cos(theta2 + theta3), s23 = sin(theta2 + theta3);
 
+    double x_part = L2 * c2 + L3 * c23;
+
+    // compute partial derivatives
+    double dx_dtheta1 = -s1 * x_part;
+    double dy_dtheta1 = c1 * x_part;
+    double dz_dtheta1 = 0;
+
+    double dx_dtheta2 = -c1 * (L2 * s2 + L3 * s23);
+    double dy_dtheta2 = -s1 * (L2 * s2 + L3 * s23);
+    double dz_dtheta2 = L2 * c2 + L3 * c23;
+
+    double dx_dtheta3 = -c1 * L3 * s23;
+    double dy_dtheta3 = -s1 * L3 * s23;
+    double dz_dtheta3 = L3 * c23;
+
     J = {
-        -s1 * (L1 + L2 * c2 + L3 * c23), -c1 * (L2 * s2 + L3 * s23), -L3 * c1 * s23,
-        c1 * (L1 + L2 * c2 + L3 * c23),  -s1 * (L2 * s2 + L3 * s23), -L3 * s1 * s23,
-        0,                               L2 * c2 + L3 * c23,         L3 * c23
+        dx_dtheta1, dx_dtheta2, dx_dtheta3,
+        dy_dtheta1, dy_dtheta2, dy_dtheta3,
+        dz_dtheta1, dz_dtheta2, dz_dtheta3
     };
 
     return J;
