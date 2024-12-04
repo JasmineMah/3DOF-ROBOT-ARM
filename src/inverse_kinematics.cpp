@@ -6,16 +6,16 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <BasicLinearAlgebra.h>
 
 #include <vector>
 #include <robot_arm.h>
-
 
 void setup() {
 
 }
 
-void newton(std::vector<double> goal, int max_iter, double threshold) {
+void newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
     // get your angles
 
     // --- algorithm ---
@@ -33,21 +33,41 @@ void newton(std::vector<double> goal, int max_iter, double threshold) {
 
     // might need to estimate initial Jacobian; move like you did with visual servoing and use forward kinematics instead.
     int k = 0;
+    BLA::Matrix<3> E, X;
+    BLA::Matrix<3, 3> J;
+    std::vector<double> angles = {1.0f, 2.0f, 3.0f}; 
+
+    estimateInitialJacobian();
+
     while (k < max_iter) {
+        // get angles from the motor encoders
+
         // calculate error
+        X = forwardKinematics(angles);
+        E = Xt - X;
 
         // check threshold
+        if (calculateNorm(E) < threshold) {
+            break;
+        }
 
         // get dQ from J
 
+
         // move motors by dQ
 
+
         // recompute the jacobian using partial derivatives
+        
     }
 
 
 }
 
+float calculateNorm(BLA::Matrix<3> m) {
+    BLA::Matrix<1> inner = ~m * m;
+    return sqrt(inner(0));
+}
 
 void loop() {
 

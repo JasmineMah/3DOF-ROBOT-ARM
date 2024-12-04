@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <BasicLinearAlgebra.h>
 
 struct Point3D {
     double x;
@@ -25,7 +26,7 @@ float rad2deg(float theta) {
 /// @brief Calculates the forward kinematics of the arm using the Denavit-Hartenberg convention.
 /// @param angles 
 /// @return The point.
-Point3D forward_kinematics(std::vector<double> angles) {
+BLA::Matrix<3> forwardKinematics(std::vector<double> angles) {
     std::for_each(angles.begin(), angles.end(), &deg2rad);
 
     double x = L1 * cos(angles[0]) + L2 * cos(angles[0]) * cos(angles[1]) +
@@ -36,7 +37,12 @@ Point3D forward_kinematics(std::vector<double> angles) {
 
     double z = L2 * sin(angles[1]) + L3 * sin(angles[2] + angles[3]);
 
-    return Point3D {x, y, z};
+    return BLA::Matrix<3>{x, y, z};
+}
+
+
+BLA::Matrix<3,3> estimateInitialJacobian() {
+    
 }
 
 #endif

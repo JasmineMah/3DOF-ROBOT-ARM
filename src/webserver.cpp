@@ -7,7 +7,7 @@
 WebServer server(80); // server on port 80
 
 // Variables to hold the five values
-char armsBuffer[256];
+char armsBuffer[64];
 int base = 0;
 int elbow = 0;
 int wrist = 0;
@@ -25,6 +25,7 @@ void handleRoot() {
   if (server.hasArg("wrist")) wrist = server.arg("wrist").toInt();
 
   // Display received values in Serial Monitor
+  // TODO: Send this to the LCD display
   sprintf(
     armsBuffer,
     "\r[RECV] Base: %03d | Elbow: %03d | Wrist: %03d", // Zero pad for simplicity in printing.
