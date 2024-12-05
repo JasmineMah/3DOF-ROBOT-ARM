@@ -18,17 +18,17 @@ void setup() {
 /// @brief Calculates the norm of a 1x3 vector.
 /// @param v 
 /// @return The norm.
-float calculateNorm(BLA::Matrix<3> v) {
+float calculate_norm(BLA::Matrix<3> v) {
     BLA::Matrix<1> inner = ~v * v;
     return sqrt(inner(0));
 }
 
 /// @brief Performs Newton's method for inverse kinematics. 
-/// @param Xt Target point.
+/// @param P_tgt Target point.
 /// @param max_iter Max number of iterations allowed.
-/// @param threshold Error allowed in X unit.
+/// @param threshold Error allowed in X units.
 /// @return Whether or not the movement was successful.
-bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
+bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
 
     // --- algorithm ---
     // definitions:
@@ -38,31 +38,30 @@ bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
     // max_iter: int
     // threshold: double
 
+    // init q
     // while k < max_iter
-    // E = X* - Xk
-    // if norm(E) < threshold EXIT
-    // dQk = J^-1 x E
-    // Qk+1 = Qk + dQk
-    // updateJacobian()
+    //     E = X* - Xk
+    //     if norm(E) < threshold EXIT
+    //     dQk = J^-1 x E
+    //     Qk+1 = Qk + dQk
+    //     updateJacobian()
     // end while
 
     int k = 0;
-    BLA::Matrix<3> E, X, Q, dQ;
+    BLA::Matrix<3> E, P, Q, dQ;
     BLA::Matrix<3, 3> J;
-    Q = {1.0f, 2.0f, 3.0f};
 
-    J = estimateInitialJacobian();
+    Q = temp_get_motor_angles();
+    J = estimate_initial_jacobian();
 
     while (k < max_iter) {
-        // get angles from the motor encoders
-        // Q = getMotorAnglesOrSomething();
 
         // calculate error
-        X = forwardKinematics(Q);
-        E = Xt - X;
+        P = forward_kinematics(Q);
+        E = P_tgt - P;
 
         // check threshold
-        if (calculateNorm(E) < threshold) {
+        if (calculate_norm(E) < threshold) {
             return true;
         }
 
@@ -76,11 +75,12 @@ bool newton(BLA::Matrix<3> Xt, int max_iter, double threshold) {
         }
 
         // move motors by dQ
-        // this can be done in parallel, maybe
-        // moveMotorAnglesOrSomething(dQ);
+        // temp_move_motors()
+        // Q += dQ;
 
         // recompute the Jacobian
-        // J = recomputeJacobian(Q);
+        // J = recompute_jacobian(Q);
+                
         k++;
     }
 
