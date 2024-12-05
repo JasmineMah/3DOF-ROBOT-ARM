@@ -14,7 +14,7 @@ struct Point3D {
 
 // TODO: Measure the linkage lengths.
 extern const double L1 = 19.6; // in cm
-extern const double L2 = 19.6;
+extern const double L2 = 19.6; // in cm
 extern const double L3 = 1.2345; // NEED TO MEASURE
 
 double deg2rad(double theta) {
@@ -75,9 +75,10 @@ BLA::Matrix<3,3> estimate_initial_jacobian() {
         P = forward_kinematics(temp_get_motor_angles());
         dP = P - last_P;
 
-        J(0, i) = dP(0);
-        J(1, i) = dP(1);
-        J(2, i) = dP(2);
+        double delta_theta_i = delta_angles(i, i);
+        J(0, i) = dP(0) / delta_theta_i;
+        J(1, i) = dP(1) / delta_theta_i;
+        J(2, i) = dP(2) / delta_theta_i;
 
         last_P = P;
     }
