@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <robot_arm.h>
+#include <motors.h>
 
 /// @brief Calculates the norm of a 1x3 vector.
 /// @param v 
@@ -71,11 +72,11 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
         }
 
         // move motors by dQ
-        // temp_move_motors()
-        // Q += dQ;
+        // move_motors(Q);
+        Q += dQ;
 
         // recompute the Jacobian
-        // J = recompute_jacobian(Q);
+        J = recompute_jacobian(Q);
                 
         k++;
     }
@@ -95,5 +96,5 @@ void setup() {
 }
 
 void loop() {
-    
+
 }

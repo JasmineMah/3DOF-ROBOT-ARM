@@ -2,17 +2,26 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <cstdlib>
-#include "secrets.h"
+#include <LiquidCrystal.h>
+
+// NOTE: You will have to configure this. If you are on a public network,
+// then it would be better to create a hotspot to connect to.
+#include "secrets.h" 
 
 WebServer server(80); // server on port 80
 
-// Variables to hold the five values
 char armsBuffer[64];
+// Set to int for display purposes.
 int base = 0;
 int elbow = 0;
 int wrist = 0;
 int hand = 0;
 
+// Initialize the LCD with the pins: RS, E, D4, D5, D6, D7
+LiquidCrystal lcd(14, 12, 27, 26, 25, 33);
+
+/// @brief Handler for the root '/' endpoint, containing the main
+/// webpage. Also handles sending values to the robot.
 void handleRoot() {
 
   String message;
@@ -24,21 +33,21 @@ void handleRoot() {
   if (server.hasArg("elbow")) elbow = server.arg("elbow").toInt();
   if (server.hasArg("wrist")) wrist = server.arg("wrist").toInt();
 
-  // Display received values in Serial Monitor
-  // TODO: Send this to the LCD display
+  // Display received values/
   sprintf(
     armsBuffer,
-    "\r[RECV] Base: %03d | Elbow: %03d | Wrist: %03d", // Zero pad for simplicity in printing.
+    "\rBase: %03d | Elbow: %03d | Wrist: %03d", // Zero pad for simplicity in printing.
     base,
     elbow,
     wrist
   );
-  Serial.flush();
-  Serial.print('\r');
-  Serial.print(armsBuffer);
+  // Serial monitor approach -- use LCD instead.
+  // Serial.flush();
+  // Serial.print('\r');
+  // Serial.print(armsBuffer);
 
-  // Send the values serially to Arduino
-  // Serial.print(base + "," + elbow + "," + wrist + "," + vexArm + "," + flipArm + "\n");
+  lcd.clear();
+  lcd.print(armsBuffer);
 
   // Use JavaScript AJAX to dynamically update the webpage with motor angles.
   // TODO: It might be worth looking into moving this into a deficated HTML file and whatnot
@@ -48,7 +57,7 @@ void handleRoot() {
       "  setTimeout(() => {"
       "    fetch('/getAngles')"
       "    .then(response => response.json())"
-      "    .then(data => {"
+      "    .then(data => {" 
       "      document.getElementById('base').innerHTML = 'Base: ' + data.base;"
       "      document.getElementById('elbow').innerHTML = 'Elbow: ' + data.elbow;"
       "      document.getElementById('wrist').innerHTML = 'Wrist: ' + data.wrist;"
@@ -78,6 +87,7 @@ void handleRoot() {
   server.send(200, "text/html", message);
 }
 
+/// @brief Handler to poll data from the '/getAngles' endpoint.
 void handleGetAngles() {
   String json = "{\"base\": " + String(base) + ", "
                 "\"elbow\": " + String(elbow) + ", "
@@ -86,11 +96,11 @@ void handleGetAngles() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Connect to Wi-Fi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Connecting to Wi-Fi");
+  Serial.print("Connecting to Wi-Fi.");
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
