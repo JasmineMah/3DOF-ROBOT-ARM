@@ -1,19 +1,14 @@
-#ifndef MOTORS
-#define MOTORS
+#ifndef MOTORS_H
+#define MOTORS_H
 
 #include <BasicLinearAlgebra.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <Encoder.h>
 
+void move_motor(Adafruit_PWMServoDriver &pwm, int motor_no, double degrees);
+void move_motors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles);
 
-// move a specific motor
-void move_motor(Adafruit_PWMServoDriver &pwm, int motor_no) {
-    
-}
-
-void move_motors(BLA::Matrix<3> angles, Adafruit_PWMServoDriver &pwm) {
-    for (int i = 0; i < angles.Cols; i++) {
-        move_motor(pwm, i);
-    }
-}
+// TODO: get the degree value from the encoder! 
+BLA::Matrix<3> get_motor_angles();
 
 #endif

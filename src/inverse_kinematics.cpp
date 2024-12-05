@@ -11,10 +11,6 @@
 #include <vector>
 #include <robot_arm.h>
 
-void setup() {
-
-}
-
 /// @brief Calculates the norm of a 1x3 vector.
 /// @param v 
 /// @return The norm.
@@ -94,6 +90,10 @@ NOTE: Angles are to be converted to RADIAN only when we intend to
 calculate them. Otherwise, they should be in degrees.
 */
 
-void loop() {
+void setup() {
 
+}
+
+void loop() {
+    
 }
