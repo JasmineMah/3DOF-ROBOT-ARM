@@ -5,20 +5,20 @@
 /// It is assumed that the motors rotate above the Z, Y, and Z-axes, respectively.
 /// @param angles Motor angles.
 /// @return The point.
-BLA::Matrix<3> forward_kinematics(BLA::Matrix<3> angles) {
+BLA::Matrix<3> forward_kinematics(const BLA::Matrix<3> angles) {
     double theta1 = angles(0) * DEG_TO_RAD;
     double theta2 = angles(1) * DEG_TO_RAD;
     double theta3 = angles(2) * DEG_TO_RAD;
 
     // 2DOF arm position for the elbow and wrist in the XZ plane
     // local coordinates from second joint
-    double x_l =      L2 * cos(theta2) + L3 * cos(theta2 + theta3);
-    double z_l = L1 + L2 * sin(theta2) + L3 * sin(theta2 + theta3);
+    double x_l = L2 * cos(theta2) + L3 * cos(theta2 + theta3);
+    double z_l = L2 * sin(theta2) + L3 * sin(theta2 + theta3);
 
     // apply rotation from the first joint (rotation along the z-axis)
     float x_w = cos(theta1) * x_l;
     float y_w = sin(theta1) * x_l;
-    float z_w = z_l;
+    float z_w = L1 + z_l;
 
     return BLA::Matrix<3>{x_w, y_w, z_w};
 }
@@ -65,39 +65,29 @@ BLA::Matrix<3,3> estimate_initial_jacobian() {
 
 
 /// @brief Recomputes the Jacobian based on the current motor angles.
-/// @param angles The motor angles.
-/// @return The Jacobian.
-BLA::Matrix<3,3> recompute_jacobian(BLA::Matrix<3> angles) {
+/// @param angles Current motor angles.
+/// @return The updated Jacobian.
+BLA::Matrix<3,3> recompute_jacobian(const BLA::Matrix<3> angles) {
     
     double theta1 = angles(0) * DEG_TO_RAD;
     double theta2 = angles(1) * DEG_TO_RAD;
     double theta3 = angles(2) * DEG_TO_RAD;
 
-    BLA::Matrix<3,3> J;
-
+    // simplification
     double c1 = cos(theta1), s1 = sin(theta1);
     double c2 = cos(theta2), s2 = sin(theta2);
     double c23 = cos(theta2 + theta3), s23 = sin(theta2 + theta3);
 
+    BLA::Matrix<3,3> J;
+
+    // intermediate terms; (x, z) relative to the 2DOF arm
     double x_part = L2 * c2 + L3 * c23;
-
-    // compute partial derivatives
-    float dx_dtheta1 = -s1 * x_part;
-    float dy_dtheta1 = c1 * x_part;
-    float dz_dtheta1 = 0;
-
-    float dx_dtheta2 = -c1 * (L2 * s2 + L3 * s23);
-    float dy_dtheta2 = -s1 * (L2 * s2 + L3 * s23);
-    float dz_dtheta2 = L2 * c2 + L3 * c23;
-
-    float dx_dtheta3 = -c1 * L3 * s23;
-    float dy_dtheta3 = -s1 * L3 * s23;
-    float dz_dtheta3 = L3 * c23;
+    double z_part = L2 * s2 + L3 * s23;
 
     J = {
-        dx_dtheta1, dx_dtheta2, dx_dtheta3,
-        dy_dtheta1, dy_dtheta2, dy_dtheta3,
-        dz_dtheta1, dz_dtheta2, dz_dtheta3
+        -s1 * x_part, -c1 * z_part,       -c1 * L3 * s23,
+         c1 * x_part, -s1 * z_part,       -s1 * L3 * s23,
+        0,            L2 * c2 + L3 * c23, L3 * c23
     };
 
     return J;
