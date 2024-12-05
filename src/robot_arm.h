@@ -15,13 +15,13 @@ BLA::Matrix<3> forward_kinematics(BLA::Matrix<3> angles);
 BLA::Matrix<3,3> estimate_initial_jacobian();
 BLA::Matrix<3,3> recompute_jacobian(BLA::Matrix<3> angles);
 
-
+// DUMMY FUNCTION TO BE REPLACED
 void temp_move_motors(BLA::Matrix<3> angles) {
     // REMOVED FOR NOW    
 }
 
+// DUMMY FUNCTION TO BE REPLACED
 BLA::Matrix<3> temp_get_motor_angles() {
-    // TODO: read from the encoders
     return BLA::Matrix<3>{1., 2., 3.};
 }
 
