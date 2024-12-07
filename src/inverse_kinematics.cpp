@@ -15,7 +15,7 @@
 /// @brief Calculates the norm of a 1x3 vector.
 /// @param v 
 /// @return The norm.
-float calculate_norm(BLA::Matrix<3> v) {
+float calculateNorm(BLA::Matrix<3> v) {
     BLA::Matrix<1> inner = ~v * v;
     return sqrt(inner(0));
 }
@@ -49,16 +49,16 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
     BLA::Matrix<3, 3> J;
 
     Q = temp_get_motor_angles();
-    J = estimate_initial_jacobian();
+    J = estimateInitialJacobian();
 
     while (k < max_iter) {
 
         // calculate error
-        P = forward_kinematics(Q);
+        P = forwardKinematics(Q);
         E = P_tgt - P;
 
-        // check threshold
-        if (calculate_norm(E) < threshold) {
+        // are we close enough to the target?
+        if (calculateNorm(E) < threshold) {
             return true;
         }
 
@@ -71,12 +71,12 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
             return false;
         }
 
-        // move motors by dQ
-        // move_motors(Q);
+        // move motors by dQ and update the estimate of the motor
+        // moveMotors(Q);
         Q += dQ;
 
         // recompute the Jacobian
-        J = recompute_jacobian(Q);
+        J = recomputeJacobian(Q);
                 
         k++;
     }

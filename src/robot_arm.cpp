@@ -5,7 +5,7 @@
 /// It is assumed that the motors rotate above the Z, Y, and Z-axes, respectively.
 /// @param angles Motor angles.
 /// @return The point.
-BLA::Matrix<3> forward_kinematics(const BLA::Matrix<3> angles) {
+BLA::Matrix<3> forwardKinematics(const BLA::Matrix<3> angles) {
     double theta1 = angles(0) * DEG_TO_RAD;
     double theta2 = angles(1) * DEG_TO_RAD;
     double theta3 = angles(2) * DEG_TO_RAD;
@@ -25,7 +25,7 @@ BLA::Matrix<3> forward_kinematics(const BLA::Matrix<3> angles) {
 
 /// @brief Estimates the initial Jacobian using a predefined set of motor angles.
 /// @return The initial Jacobian estimate.
-BLA::Matrix<3,3> estimate_initial_jacobian() {
+BLA::Matrix<3,3> estimateInitialJacobian() {
     // TODO: might need motor control reference
     BLA::Matrix<3, 3> J = BLA::Eye<3,3>();
 
@@ -43,13 +43,13 @@ BLA::Matrix<3,3> estimate_initial_jacobian() {
         0, 0, 6
     };
 
-    last_P = forward_kinematics(temp_get_motor_angles());
+    last_P = forwardKinematics(temp_get_motor_angles());
 
     for (int i = 0; i < J.Cols; i++) {
         temp_move_motors(
             BLA::Matrix<3>{delta_angles(i, 0), delta_angles(i, 1), delta_angles(i, 2)}
         );
-        P = forward_kinematics(temp_get_motor_angles());
+        P = forwardKinematics(temp_get_motor_angles());
         dP = P - last_P;
 
         double delta_theta_i = delta_angles(i, i);
@@ -58,6 +58,8 @@ BLA::Matrix<3,3> estimate_initial_jacobian() {
         J(2, i) = dP(2) / delta_theta_i;
 
         last_P = P;
+
+        delay(500);
     }
 
     return J;
@@ -67,7 +69,7 @@ BLA::Matrix<3,3> estimate_initial_jacobian() {
 /// @brief Recomputes the Jacobian based on the current motor angles.
 /// @param angles Current motor angles.
 /// @return The updated Jacobian.
-BLA::Matrix<3,3> recompute_jacobian(const BLA::Matrix<3> angles) {
+BLA::Matrix<3,3> recomputeJacobian(const BLA::Matrix<3> angles) {
     
     double theta1 = angles(0) * DEG_TO_RAD;
     double theta2 = angles(1) * DEG_TO_RAD;
