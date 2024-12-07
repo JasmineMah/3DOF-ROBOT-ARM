@@ -75,6 +75,16 @@ void handleRoot2() {
             "<input type='submit' value='Send'>"
             "</form>"
             "</div>"
+            "<h2>Telemetry</h2>"
+            "<div id='information-container'>"
+            "<p>" + String(useXYZ ? "X: " : "Base: ") + String(v0) + "</p>"
+            "<p>" + String(useXYZ ? "Y: " : "Elbow: ") + String(v1) + "</p>"
+            "<p>" + String(useXYZ ? "Z: " : "Wrist: ") + String(v2) + "</p>"
+            // "<p>v0: " + String(v0) + "</p>"
+            // "<p>v1: " + String(v1) + "</p>"
+            // "<p>v2: " + String(v2) + "</p>"
+            "<p>Grab: " + (grab ? "ON " : "OFF") + "</p>"
+            "</div>"
             "</body></html>";
   
   // TODO: Print internal information here at some point.
@@ -124,23 +134,6 @@ void handleRoot() {
   }
   
   grab = server.hasArg("grab") && server.arg("grab") == "1";
-  
-  // Display received values
-  // sprintf(
-  //   armsBuffer,
-  //   "\rBase: %03d | Elbow: %03d | Wrist: %03d | Grab: %s", // Zero pad for simplicity in printing.
-  //   base,
-  //   elbow,
-  //   wrist,
-  //   grab ? "ON " : "OFF"
-  // );
-
-  // // Serial monitor approach -- use LCD instead.
-  // Serial.flush();
-  // Serial.print('\r');
-  // Serial.print(armsBuffer);
-
-
 
   // Dynamically update the webpage with motor angles.
 message = "<html><head><title>CMPUT 312 3DOF ARM</title>"
@@ -157,8 +150,7 @@ message = "<html><head><title>CMPUT 312 3DOF ARM</title>"
 
           "function toggleMode() {"
           "  const mode = document.getElementById('mode-toggle').checked ? 1 : 0;"
-          // "  window.location.href = '/?useXYZ=' + mode;"
-          "  window.history.pushState(null, '', '/?useXYZ=' + mode);"
+          "  window.location.href = '/?useXYZ=' + mode;"
           "}"
 
           // "function updateTelemetry() {"
