@@ -7,16 +7,16 @@
 // NOTE: You will have to configure this. If you are on a public network,
 // then it would be better to create a hotspot to connect to.
 #include "secrets.h" 
+#include "webserver_style.h"
 
 WebServer server(80); // server on port 80
 
 char armsBuffer[64];
 // Set to int for display purposes.
-int base = 0;
-int elbow = 0;
-int wrist = 0;
-int hand = 0;
+int base = 0, elbow = 0, wrist = 0;
+float x = 0, y = 0, z = 0;
 bool grab = false;
+bool using_xyz = false;
 
 // Initialize the LCD with the pins: RS, E, D4, D5, D6, D7
 // LiquidCrystal lcd(14, 12, 27, 26, 25, 33);
@@ -35,7 +35,13 @@ void handleRoot() {
   if (server.hasArg("wrist")) wrist = server.arg("wrist").toInt();
   if (server.hasArg("grab")) grab = server.arg("grab") == "1";
 
-  // Display received values/
+  if (server.hasArg("x")) base = server.arg("x").toFloat();
+  if (server.hasArg("y")) elbow = server.arg("y").toFloat();
+  if (server.hasArg("z")) wrist = server.arg("z").toFloat();
+
+  using_xyz = server.hasArg("x") && server.hasArg("y") && server.hasArg("z");
+
+  // Display received values
   sprintf(
     armsBuffer,
     "\rBase: %03d | Elbow: %03d | Wrist: %03d | Grab: %s", // Zero pad for simplicity in printing.
@@ -55,6 +61,8 @@ void handleRoot() {
 
   // Dynamically update the webpage with motor angles.
 message = "<html><head><title>CMPUT 312 3DOF ARM</title>"
+    "<link rel='stylesheet' href='/styles.css'>"
+    "<link rel='shortcut icon' href='#'>"
     "<script>"
     "let grabState = " + String(grab ? "true" : "false") + ";"
     
@@ -98,9 +106,53 @@ message = "<html><head><title>CMPUT 312 3DOF ARM</title>"
     "<p id='base'>Base: " + String(base) + "</p>"
     "<p id='elbow'>Elbow: " + String(elbow) + "</p>"
     "<p id='wrist'>Wrist: " + String(wrist) + "</p>"
-    "<p id='grab'>Grab: " + (grab ? "ON" : "OFF") + "</p>"
+    "<p id='grab'>Grab: " + (grab ? "ON " : "OFF") + "</p>"
     "</div>"
     "</body></html>";
+
+// message = "<html><head><title>CMPUT 312 3DOF ARM</title>"
+//     "<link rel='stylesheet' href='/styles.css'>"
+//     "<script>"
+//     "let mode = 'angles';"  // Default mode is angles
+//     "function toggleMode() {"
+//     "  mode = mode === 'angles' ? 'xyz' : 'angles';"
+//     "  document.getElementById('angles-inputs').style.display = mode === 'angles' ? 'block' : 'none';"
+//     "  document.getElementById('xyz-inputs').style.display = mode === 'xyz' ? 'block' : 'none';"
+//     "  document.getElementById('mode-toggle').innerText = mode === 'angles' ? 'Switch to XYZ Input' : 'Switch to Angles Input';"
+//     "}"
+//     "</script>"
+//     "</head><body><h1>3DOF Arm Control</h1>"
+//     "<button id='mode-toggle' onclick='toggleMode()'>Switch to XYZ Input</button>"
+//     "<div id='form-container'>"
+//     "<form method='GET' action='/'>"
+    
+//     // Angles Input Section
+//     "<div id='angles-inputs'>"
+//     "<h2>Set Angles</h2>"
+//     "<label>Base:</label><input type='number' name='base' min='0' max='360' placeholder='Base angle' value='" + String(base) + "'>"
+//     "<label>Elbow:</label><input type='number' name='elbow' min='0' max='360' placeholder='Elbow angle' value='" + String(elbow) + "'>"
+//     "<label>Wrist:</label><input type='number' name='wrist' min='0' max='360' placeholder='Wrist angle' value='" + String(wrist) + "'>"
+//     "</div>"
+
+//     // XYZ Input Section
+//     "<div id='xyz-inputs' style='display: none;'>"
+//     "<h2>Set XYZ Coordinates</h2>"
+//     "<label>X:</label><input type='number' name='x' placeholder='X coordinate' value='0'>"
+//     "<label>Y:</label><input type='number' name='y' placeholder='Y coordinate' value='0'>"
+//     "<label>Z:</label><input type='number' name='z' placeholder='Z coordinate' value='0'>"
+//     "</div>"
+
+//     "<input type='submit' value='Send'>"
+//     "</form>"
+//     "</div>"
+
+//     "<div id='angles'>"
+//     "<p id='base'>Base: " + String(base) + "</p>"
+//     "<p id='elbow'>Elbow: " + String(elbow) + "</p>"
+//     "<p id='wrist'>Wrist: " + String(wrist) + "</p>"
+//     "<p id='grab'>Grab: " + (grab ? "ON" : "OFF") + "</p>"
+//     "</div>"
+//     "</body></html>";
 
   // Send response with form and message
   server.send(200, "text/html", message);
@@ -113,6 +165,11 @@ void handleGetAngles() {
                 "\"wrist\": " + String(wrist) + ", "
                  "\"grab\": " + String(grab ? "true" : "false") + "}";
   server.send(200, "application/json", json);
+}
+
+/// @brief Handler to poll the style sheet.
+void handleStyling() {
+  server.send(200, "text/css", style);
 }
 
 void setup() {
@@ -134,6 +191,7 @@ void setup() {
   // Set up server routes
   server.on("/", handleRoot);    // Define the root endpoint
   server.on("/getAngles", handleGetAngles);
+  server.on("/styles.css", handleStyling);
   server.begin();                // Start the server
   Serial.println("Server started. Listening for angles.\n");
 }
