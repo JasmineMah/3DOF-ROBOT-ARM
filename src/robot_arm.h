@@ -11,9 +11,9 @@ extern const double L1 = 19.6; // in cm
 extern const double L2 = 19.6; // in cm
 extern const double L3 = 1.2345; // NEED TO MEASURE
 
-BLA::Matrix<3> forward_kinematics(BLA::Matrix<3> angles);
-BLA::Matrix<3,3> estimate_initial_jacobian();
-BLA::Matrix<3,3> recompute_jacobian(BLA::Matrix<3> angles);
+BLA::Matrix<3> forwardKinematics(BLA::Matrix<3> angles);
+BLA::Matrix<3,3> estimateInitialJacobian();
+BLA::Matrix<3,3> recomputeJacobian(BLA::Matrix<3> angles);
 
 // DUMMY FUNCTION TO BE REPLACED
 void temp_move_motors(BLA::Matrix<3> angles) {
