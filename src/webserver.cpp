@@ -103,6 +103,9 @@ void handleRoot2() {
   server.send(200, "text/html", message);
 }
 
+/// @brief Handler to fetch arm info from the ESP32.
+/// TODO: Differentiate between the ESP's XYZ/angle data and the incoming data.
+/// You might have to unpack the variables and differentiate what to send.
 void handleGetInfo() {
   String json = "{\"v0\": " + String(v0) + ", "
                 "\"v1\": " + String(v1) + ", "
@@ -112,6 +115,7 @@ void handleGetInfo() {
   server.send(200, "application/json", json);
 }
 
+/// @brief Handler for toggling the mode to send data.
 void handleToggleMode() {
   if (server.hasArg("use_xyz")) {
     useXYZ = server.arg("use_xyz") == "1";
