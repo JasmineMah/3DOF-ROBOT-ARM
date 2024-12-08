@@ -1,6 +1,6 @@
 #include <motors.h>
 
-void moveMotor(Adafruit_PWMServoDriver &pwm, int motor_no, double degrees) {
+void moveMotor(Adafruit_PWMServoDriver &pwm, int motor_no, float degrees) {
     // TODO: move one individual motor by `degrees`
 }
 

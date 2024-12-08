@@ -13,14 +13,18 @@ WebServer server(80); // port 80
 
 char armsBuffer[64];
 bool grab = false, useXYZ = false;
-float v0, v1, v2;
+// Raw data that is sent/recieved between the web server.
+// NOTE: This should be processed to either XYZ or angles, depending on the flag `useXYZ`.
+float v0, v1, v2; 
+float X, Y, Z;
+float base, elbow, wrist;
 
 // Initialize the LCD with the pins: RS, E, D4, D5, D6, D7
 // LiquidCrystal lcd(14, 12, 27, 26, 25, 33);
 
 /// @brief Handles the root endpoint. Values are defined as `v0`, `v1`, and `v2`
 /// as either joint angles OR coordinates of the end effector.
-void handleRoot2() {
+void handleRoot() {
   String message;
 
   if (server.hasArg("v0")) v0 = server.arg("v0").toFloat();
@@ -144,14 +148,14 @@ void setup() {
 
   Serial.println("\nConnected to Wi-Fi!");
   Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(WiFi.localIP()); // Open this up in your browser.
 
-  // Set up server routes
-  server.on("/", handleRoot2);
+  server.on("/", handleRoot);
   server.on("/getInfo", handleGetInfo);
   server.on("/toggleMode", handleToggleMode);
   server.on("/styles.css", handleStyling);
-  server.begin();                // Start the server
+
+  server.begin();                
   Serial.println("Server started. Listening for angles.\n");
 }
 
