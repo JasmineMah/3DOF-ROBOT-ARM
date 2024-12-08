@@ -7,9 +7,9 @@
 
 
 // TODO: Measure the linkage lengths.
-extern const double L1 = 19.6; // in cm
-extern const double L2 = 19.6; // in cm
-extern const double L3 = 1.2345; // NEED TO MEASURE
+extern const float L1 = 19.6; // in cm
+extern const float L2 = 19.6; // in cm
+extern const float L3 = 1.2345; // NEED TO MEASURE
 
 BLA::Matrix<3> forwardKinematics(BLA::Matrix<3> angles);
 BLA::Matrix<3,3> estimateInitialJacobian();
