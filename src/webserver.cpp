@@ -34,9 +34,9 @@ void handleRoot() {
   // Mode is handled separately with a different endpoint.
   grab = server.hasArg("grab") && server.arg("grab") == "1";
 
-  // NOTE: Copy values v0, v1, v2 and parse them here for inputs to the motor.
+  // NOTE: Copy values v0, v1, v2, diffrentiate them, then send them to the motors here.
 
-  message = "<html><head><title>CMPUT 312 3DOF Arm</title>"
+  message = "<html><head><title>CMPUT 312 3DOF Arm Controller</title>"
             "<link rel='shortcut icon' href='#'>"
             "<link rel='stylesheet' href='styles.css'>"
             "<script>"
@@ -100,7 +100,7 @@ void handleRoot() {
             "<p id='p-v0'></p>"
             "<p id='p-v1'></p>"
             "<p id='p-v2'></p>"
-            "<p id='p-grab'>Grab: " + (grab ? "ON " : "OFF") + "</p>"
+            "<p id='p-grab'></p>"
             "</div>"
             "</body></html>";
 
@@ -111,6 +111,7 @@ void handleRoot() {
 /// TODO: Differentiate between the ESP's XYZ/angle data and the incoming data.
 /// You might have to unpack the variables and differentiate what to send.
 void handleGetInfo() {
+  // Info handling might have to go here...
   String json = "{\"v0\": " + String(v0) + ", "
                 "\"v1\": " + String(v1) + ", "
                 "\"v2\": " + String(v2) + ", "
@@ -120,6 +121,8 @@ void handleGetInfo() {
 }
 
 /// @brief Handler for toggling the mode to send data.
+/// if the user toggles the mode from the UI it should be
+/// expected that the telemetry values change? or just display both of them.
 void handleToggleMode() {
   if (server.hasArg("use_xyz")) {
     useXYZ = server.arg("use_xyz") == "1";
