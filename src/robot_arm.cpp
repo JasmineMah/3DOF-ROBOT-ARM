@@ -1,6 +1,7 @@
 #include <math.h>
 #include <robot_arm.h>
 
+
 /// @brief Calculates the forward kinematics of the arm using the Denavit-Hartenberg convention.
 /// It is assumed that the motors rotate above the Z, Y, and Z-axes, respectively.
 /// @param angles Motor angles.
@@ -22,6 +23,7 @@ BLA::Matrix<3> forwardKinematics(const BLA::Matrix<3> angles) {
 
     return BLA::Matrix<3>{x_w, y_w, z_w};
 }
+
 
 /// @brief Estimates the initial Jacobian using a predefined set of motor angles.
 /// @return The initial Jacobian estimate.

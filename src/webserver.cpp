@@ -34,7 +34,8 @@ void handleRoot() {
   // Mode is handled separately with a different endpoint.
   grab = server.hasArg("grab") && server.arg("grab") == "1";
 
-  // NOTE: Copy values v0, v1, v2, diffrentiate them, then send them to the motors here.
+  // NOTE: Copy values v0, v1, v2, differentiate them XYZ or angles
+  // and then send them to the motors here.
 
   message = "<html><head><title>CMPUT 312 3DOF Arm Controller</title>"
             "<link rel='shortcut icon' href='#'>"
@@ -111,7 +112,6 @@ void handleRoot() {
 /// TODO: Differentiate between the ESP's XYZ/angle data and the incoming data.
 /// You might have to unpack the variables and differentiate what to send.
 void handleGetInfo() {
-  // Info handling might have to go here...
   String json = "{\"v0\": " + String(v0) + ", "
                 "\"v1\": " + String(v1) + ", "
                 "\"v2\": " + String(v2) + ", "

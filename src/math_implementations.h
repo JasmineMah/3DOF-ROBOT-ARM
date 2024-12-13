@@ -4,7 +4,7 @@
 #include <cmath>
 #include <BasicLinearAlgebra.h>
 
-/// @brief Calculates the norm of a 1x3 vector.
+/// @brief Calculates the norm of a 1x3 vector. Tested.
 /// @param v 
 /// @return The norm.
 float calculateNorm(BLA::Matrix<3> v) {
@@ -12,7 +12,7 @@ float calculateNorm(BLA::Matrix<3> v) {
     return sqrt(inner(0));
 }
 
-/// @brief Checks if the Jacobian is singular.
+/// @brief Checks if the Jacobian is singular. Tested.
 /// @param J Input Jacobian.
 /// @return Whether or not the Jacobian is singular.
 bool isJacobianSingular(const BLA::Matrix<3,3>& J) {
