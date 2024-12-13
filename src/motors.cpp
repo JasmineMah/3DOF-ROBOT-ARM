@@ -13,6 +13,7 @@ void moveMotor(Adafruit_PWMServoDriver &pwm, uint8_t motor_no, float degrees) {
 /// @param delta_angles Angles for which to move the motors by.
 void moveMotors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles) {
     for (int i = 0; i < delta_angles.Cols; i++) {
+        // Ideally if time permits, threading would be used here.
         moveMotor(pwm, i, delta_angles(i));
     }
 }

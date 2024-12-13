@@ -1,6 +1,3 @@
-// implement the lab 2 code
-// specifically part 3ai; numerical (Newton's or Broyden's method)
-
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
@@ -11,14 +8,15 @@
 #include <vector>
 #include <robot_arm.h>
 #include <motors.h>
+#include <math_implementations.h>
 
-/// @brief Calculates the norm of a 1x3 vector.
-/// @param v 
-/// @return The norm.
-float calculateNorm(BLA::Matrix<3> v) {
-    BLA::Matrix<1> inner = ~v * v;
-    return sqrt(inner(0));
-}
+/*
+Inverse kinematics implementation.
+
+NOTE: Angles are to be converted to RADIAN only when we intend to
+calculate them. Otherwise, they should be in degrees.
+*/
+
 
 /// @brief Performs Newton's method for inverse kinematics. 
 /// @param P_tgt Target point.
@@ -27,28 +25,11 @@ float calculateNorm(BLA::Matrix<3> v) {
 /// @return Whether or not the movement was successful.
 bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
 
-    // --- algorithm ---
-    // definitions:
-    // X: double[] = [x y z]
-    // Q: double[] = [m1, m2, ..., mn]
-    // k: int
-    // max_iter: int
-    // threshold: double
-
-    // init q
-    // while k < max_iter
-    //     E = X* - Xk
-    //     if norm(E) < threshold EXIT
-    //     dQk = J^-1 x E
-    //     Qk+1 = Qk + dQk
-    //     updateJacobian()
-    // end while
-
     int k = 0;
-    BLA::Matrix<3> E, P, Q, dQ;
+    BLA::Matrix<3> E, P, Q, dQ; // error, end effector point, motor angles, delta
     BLA::Matrix<3, 3> J;
 
-    Q = temp_get_motor_angles();
+    Q = getMotorAngles();
     J = estimateInitialJacobian();
 
     while (k < max_iter) {
@@ -59,16 +40,16 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
 
         // are we close enough to the target?
         if (calculateNorm(E) < threshold) {
+            Serial.println(String("Reached target in ") + k + String(" iterations!"));
             return true;
         }
 
         // get dQ from J
-        // NOTE: this can get really bad; singular matrix moment
-        try {
-            dQ = BLA::Inverse(J) * E; // TODO: Handle the case where the matrix is singular.
-        } catch(...) {
-            Serial.println("Uh oh");
+        if (isJacobianSingular(J)) {
+            Serial.println("Singular Jacobian!");
             return false;
+        } else {
+            dQ = BLA::Inverse(J) * E;
         }
 
         // move motors by dQ and update the estimate of the motor
@@ -79,17 +60,13 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
         J = recomputeJacobian(Q);
                 
         k++;
+        delay(150);
     }
 
     return false;
 
 
 }
-
-/*
-NOTE: Angles are to be converted to RADIAN only when we intend to
-calculate them. Otherwise, they should be in degrees.
-*/
 
 void setup() {
 
