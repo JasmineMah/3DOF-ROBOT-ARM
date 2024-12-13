@@ -10,7 +10,7 @@ void tearDown(void) {
     // tear down here
 }
 
-void testCalculateNorm3x3() {
+void testCalculateNorm3() {
     BLA::Matrix<3> v;
     v = { 1.0f, 2.0f, 3.0f };
     TEST_ASSERT_EQUAL_FLOAT(sqrt(14), calculateNorm(v));
@@ -18,6 +18,8 @@ void testCalculateNorm3x3() {
 
 void testIsJacobianSingular() {
     BLA::Matrix<3, 3> J;
+
+    // singular
     J = {
         1.0f, 1.0f, 1.0f,
         1.0f, 1.0f, 1.0f,
@@ -26,6 +28,7 @@ void testIsJacobianSingular() {
 
     TEST_ASSERT_TRUE(isJacobianSingular(J));
 
+    // non-singular
     J = {
         5.0f, 3.0f, 9.0f,
         4.0f, 1.0f, 6.0f,
@@ -63,7 +66,7 @@ void testInverse3x3Matrix() {
 void setup() {
     UNITY_BEGIN();
 
-    RUN_TEST(testCalculateNorm3x3);
+    RUN_TEST(testCalculateNorm3);
     RUN_TEST(testIsJacobianSingular);
     RUN_TEST(testInverse3x3Matrix);
 

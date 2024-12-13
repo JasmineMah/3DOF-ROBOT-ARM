@@ -21,7 +21,7 @@ void moveMotors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles) {
 /// @brief Gets motor angles from the encoders.
 /// @return Motor angles.
 BLA::Matrix<3> getMotorAngles() {
-    
+    // Waiting on encoder support and interfacing.
 }
 
-// TODO: Implement move_to_position() in the similar way that we would do for the LEGO motors.
+// TODO: Implement moveToPosition() in the similar way that we would call move_to_position() for the LEGO motors.

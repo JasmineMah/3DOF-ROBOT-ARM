@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <BasicLinearAlgebra.h>
 
-
-// TODO: Measure the linkage lengths.
+// Temporary linkage lengths that need to be remeasured.
 extern const float L1 = 19.6; // in cm
 extern const float L2 = 19.6; // in cm
 extern const float L3 = 1.2345; // NEED TO MEASURE

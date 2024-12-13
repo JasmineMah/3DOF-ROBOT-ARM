@@ -23,7 +23,7 @@ calculate them. Otherwise, they should be in degrees.
 /// @param max_iter Max number of iterations allowed.
 /// @param threshold Error allowed in X units.
 /// @return Whether or not the movement was successful.
-bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
+bool newton(BLA::Matrix<3> P_tgt, int max_iter, float threshold = 2.5f) {
 
     int k = 0;
     BLA::Matrix<3> E, P, Q, dQ; // error, end effector point, motor angles, delta
@@ -34,7 +34,7 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
 
     while (k < max_iter) {
 
-        // calculate error
+        // calculate the error
         P = forwardKinematics(Q);
         E = P_tgt - P;
 
@@ -52,11 +52,10 @@ bool newton(BLA::Matrix<3> P_tgt, int max_iter, double threshold = 2.5f) {
             dQ = BLA::Inverse(J) * E;
         }
 
-        // move motors by dQ and update the estimate of the motor
-        // moveMotors(Q);
+        // move motors by dQ, then update the estimate of joint angles
+        // moveMotors(dQ);
         Q += dQ;
 
-        // recompute the Jacobian
         J = recomputeJacobian(Q);
                 
         k++;
