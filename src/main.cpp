@@ -1,62 +1,43 @@
 #include <Wire.h>
 #include <SPI.h>
-#include <Arduino.h>
 #include <LiquidCrystal.h>
-#include <Adafruit_PWMServoDriver.h>
 
-// Initialize the LCD with the pins: RS, E, D4, D5, D6, D7
-LiquidCrystal lcd(14, 12, 27, 26, 25, 33);
+#include "headers/motors.h"
+#include "headers/webserver.h"
 
-// Servo pulse range (adjust if necessary for your servos)
-#define SERVOMIN 10  // Minimum pulse length
-#define SERVOMAX 150  // Maximum pulse length
-Adafruit_PWMServoDriver pwm;
+#define DISABLE_WEBSERVER_STARTUP_LOOP // We aren't debugging the webserver standalone.
+
+// LCD pins
+#define LCD_RS 14
+#define LCD_EN 12
+#define LCD_D4 27
+#define LCD_D5 26
+#define LCD_D6 25
+#define LCD_D7 33
+
+// PCA9685 setup
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+// Encoders and LCD
+Encoder myEncoder1(ENCODER1_A, ENCODER1_B);
+Encoder myEncoder2(ENCODER2_A, ENCODER2_B);
+Encoder myEncoder3(ENCODER3_A, ENCODER3_B);
+LiquidCrystal lcd(LCD_RS, LCD_EN, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 void setup() {
-    // Setup for LCD
-    lcd.begin(16, 2); // Initialize 16x2 LCD
-    lcd.print("Hello, LCD!"); // Print test message
-    delay(2000); // Pause for 2 seconds
-    lcd.clear();
+    Serial.begin(115200);
+    lcd.begin(16,2);
 
-    // Setup for Serial
-    Serial.begin(115200); // Start Serial at 115200 baud
-    delay(1000);
-    Serial.println("Hello, Serial Monitor!");
+    // Begin the web server
+    initWebServer();
 
-    // Setup for PCA9685
-    pwm = Adafruit_PWMServoDriver();
-    Wire.begin();
-    pwm.begin();
-    pwm.setPWMFreq(50); // Set frequency to 50Hz for servo control
-    delay(10);
+    // On each HTTP request, if time permits, we would handle it with 
 
-    Serial.println("PCA9685 Initialized. Setting initial positions...");
 
-    // Set initial servo position
-    pwm.setPWM(0, 0, SERVOMIN);
-    delay(1000);
-
-    lcd.print("Setup Complete!");
-    Serial.println("Setup complete. Starting loop...");
 }
 
 void loop() {
-    // Move servos forward
-    Serial.println("Sweeping servos forward...");
-    lcd.clear();
-    lcd.print("Moving Forward...");
-    for (int pulseWidth = SERVOMIN; pulseWidth <= SERVOMAX; pulseWidth++) {
-        pwm.setPWM(0, 0, pulseWidth); // Servo 1 (channel 0)
-        delay(10);
-    }
+    handleWebServer();
 
-    // Move servos backward
-    Serial.println("Sweeping servos backward...");
-    lcd.clear();
-    lcd.print("Moving Backward...");
-    for (int pulseWidth = SERVOMAX; pulseWidth >= SERVOMIN; pulseWidth--) {
-        pwm.setPWM(0, 0, pulseWidth); // Servo 1 (channel 0)
-        delay(10);
-    }
+    // Continually read encoder values from the motors.
 }

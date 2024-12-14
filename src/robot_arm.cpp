@@ -1,5 +1,7 @@
 #include <math.h>
-#include <robot_arm.h>
+#include "headers/robot_arm.h"
+#include "headers/math_implementations.h"
+#include "headers/motors.h"
 
 
 /// @brief Calculates the forward kinematics of the arm using the Denavit-Hartenberg convention.
@@ -67,7 +69,6 @@ BLA::Matrix<3,3> estimateInitialJacobian() {
     return J;
 }
 
-
 /// @brief Recomputes the Jacobian based on the current motor angles.
 /// @param angles Current motor angles.
 /// @return The updated Jacobian.
@@ -95,4 +96,51 @@ BLA::Matrix<3,3> recomputeJacobian(const BLA::Matrix<3> angles) {
     };
 
     return J;
+}
+
+/// @brief Performs Newton's method for inverse kinematics. 
+/// @param P_tgt Target point.
+/// @param max_iter Max number of iterations allowed.
+/// @param threshold Error allowed in X units.
+/// @return Whether or not the movement was successful.
+bool newton(BLA::Matrix<3> P_tgt, int max_iter, float threshold = 2.5f) {
+
+    int k = 0;
+    BLA::Matrix<3> E, P, Q, dQ; // error, end effector point, motor angles, delta
+    BLA::Matrix<3, 3> J;
+
+    Q = getMotorAngles();
+    J = estimateInitialJacobian();
+
+    while (k < max_iter) {
+
+        // calculate the error
+        P = forwardKinematics(Q);
+        E = P_tgt - P;
+
+        // are we close enough to the target?
+        if (calculateNorm(E) < threshold) {
+            Serial.println(String("Reached target in ") + k + String(" iterations!"));
+            return true;
+        }
+
+        // get dQ from J
+        if (isJacobianSingular(J)) {
+            Serial.println("Singular Jacobian!");
+            return false;
+        } else {
+            dQ = BLA::Inverse(J) * E;
+        }
+
+        // move motors by dQ, then update the estimate of joint angles
+        // moveMotors(dQ);
+        Q += dQ;
+
+        J = recomputeJacobian(Q);
+                
+        k++;
+        delay(150);
+    }
+
+    return false;
 }
