@@ -1,6 +1,7 @@
 #include <unity.h>
-#include <math_implementations.h>
 #include <cmath>
+
+#include <headers/math_implementations.h>
 
 void setUp(void) {
     // set up here
