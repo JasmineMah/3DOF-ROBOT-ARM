@@ -15,8 +15,8 @@
 
 // Encoder 3
 #define ENCODER3_A 19
-#define ENCODER3_B 21
-#define ENCODER3_INDEX 15
+#define ENCODER3_B 15
+#define ENCODER3_INDEX 23
 
 // LCD pins
 #define LCD_RS 14
