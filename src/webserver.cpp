@@ -1,23 +1,27 @@
+#ifndef USE_WEBSERVER_STANDALONE
+#define USE_WEBSERVER_STANDALONE
+#endif
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <cstdlib>
-// #include <LiquidCrystal.h>
 
-// NOTE: You will have to configure this. If you are on a public network,
+// NOTE: You will have to configure this manually. If you are on a public network,
 // then it would be better to create a hotspot to connect to.
-#include "secrets.h" 
-#include "webserver_style.h"
+#include "headers/webserver.h"
+#include "headers/secrets.h"
+#include "headers/webserver_style.h"
 
 WebServer server(80); // port 80
 
 char armsBuffer[64];
-bool grab = false, useXYZ = false;
-// Raw data that is sent/recieved between the web server.
-// NOTE: This should be processed to either XYZ or angles, depending on the flag `useXYZ`.
-float v0, v1, v2; 
+// Raw data: v0, v1, v2; this should be processed to either XYZ or angles depending on the flag `useXYZ`
+float v0, v1, v2;
 float X, Y, Z;
 float base, elbow, wrist;
+
+bool grab, useXYZ;
 
 // Initialize the LCD with the pins: RS, E, D4, D5, D6, D7
 // LiquidCrystal lcd(14, 12, 27, 26, 25, 33);
@@ -137,9 +141,7 @@ void handleStyling() {
   server.send(200, "text/css", style);
 }
 
-void setup() {
-  Serial.begin(115200);
-
+void initWebServer() {
   // Connect to Wi-Fi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi.");
@@ -162,6 +164,17 @@ void setup() {
   Serial.println("Server started. Listening for angles.\n");
 }
 
-void loop() {
+void handleWebServer() {
   server.handleClient();  // Listen for incoming clients
 }
+
+#ifndef USE_WEBSERVER_STANDALONE // For standalone debugging
+void setup() {
+  Serial.begin(115200);
+  initWebServer();
+}
+
+void loop() {
+  handleWebServer();
+}
+#endif
