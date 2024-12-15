@@ -1,7 +1,3 @@
-#ifndef USE_WEBSERVER_STANDALONE
-#define USE_WEBSERVER_STANDALONE
-#endif
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
@@ -33,7 +29,20 @@ void handleRoot() {
     if (server.hasArg("v1")) v1 = server.arg("v1").toFloat();
     if (server.hasArg("v2")) v2 = server.arg("v2").toFloat();
 
-    // v0, v1, v2 are later unpacked.
+    // Unpack raw values v0, v1, v2.
+    // If we are not debugging the webserver by itself, then we unpack v0, v1, v2
+    // AFTER the HTML response is sent. 
+    #ifdef USE_WEBSERVER_STANDALONE
+    if (useXYZ) {
+        X = v0;
+        Y = v1;
+        Z = v2;
+    } else {
+        base = v0;
+        elbow = v1;
+        wrist = v2;
+    }
+    #endif
 
     // Mode is handled separately with a different endpoint.
     grab = server.hasArg("grab") && server.arg("grab") == "1";
@@ -112,9 +121,9 @@ void handleRoot() {
 /// @brief Handler to fetch arm info from the ESP32. Values are continuously
 /// read, and updated from the robot arm.
 void handleGetInfo() {
-    String json = "{\"v0\": " + String(useXYZ ? X ?: NAN : base ?: NAN) + ", "
-                   "\"v1\": " + String(useXYZ ? Y ?: NAN : elbow ?: NAN) + ", "
-                   "\"v2\": " + String(useXYZ ? Z ?: NAN : wrist ?: NAN) + ", "
+    String json = "{\"v0\": " + String(useXYZ ? X : base) + ", "
+                   "\"v1\": " + String(useXYZ ? Y : elbow) + ", "
+                   "\"v2\": " + String(useXYZ ? Z : wrist) + ", "
                    "\"grab\": " + String(grab ? "true" : "false") + ", "
                    "\"use_xyz_mode\": " + String(useXYZ ? "true" : "false") + "}";
     server.send(200, "application/json", json);
@@ -164,7 +173,8 @@ void handleWebServer() {
     server.handleClient();  // Listen for incoming clients
 }
 
-#ifndef USE_WEBSERVER_STANDALONE // For standalone debugging
+// If we are debugging the web server, standalone.
+#ifdef USE_WEBSERVER_STANDALONE
 void setup() {
     Serial.begin(115200);
     initWebServer();
