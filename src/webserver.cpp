@@ -5,7 +5,7 @@
 
 // NOTE: You will have to configure this manually. If you are on a public network,
 // then it would be better to create a hotspot to connect to.
-#include "headers/webserver.h"
+#include "webserver.h"
 #include "headers/secrets.h"
 #include "headers/webserver_style.h"
 
