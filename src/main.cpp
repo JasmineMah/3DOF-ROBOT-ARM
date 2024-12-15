@@ -6,8 +6,6 @@
 #include "headers/webserver.h"
 #include "headers/robot_arm.h"
 
-#define DISABLE_WEBSERVER_STARTUP_LOOP // We aren't debugging the webserver standalone.
-
 // LCD pins
 #define LCD_RS 14
 #define LCD_EN 12
@@ -70,6 +68,7 @@ float convertEncoderReadingToAngle(long rawEncoderReading) {
     return (float) rawEncoderReading;
 }
 
+#ifdef DISABLE_WEBSERVER_STANDALONE
 void loop() {
     // Listens for the incoming client.
     handleWebServer();
@@ -89,3 +88,4 @@ void loop() {
     Y = endEffectorXYZ(1);
     Z = endEffectorXYZ(2);
 }
+#endif
