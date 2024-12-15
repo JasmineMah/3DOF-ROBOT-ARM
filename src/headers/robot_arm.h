@@ -4,26 +4,16 @@
 #include <math.h>
 #include <algorithm>
 #include <BasicLinearAlgebra.h>
+#include <Adafruit_PWMServoDriver.h>
 
-
-// Temporary linkage lengths that need to be remeasured.
-extern const float L1 = 19.6; // in cm
-extern const float L2 = 19.6; // in cm
-extern const float L3 = 1.2345; // NEED TO MEASURE
+// Temporary linkage lengths that really should be remeasured, given in cm.
+const float L1 = 19.6;
+const float L2 = 19.6;
+const float L3 = 1.2345; // TO BE MEASURED
 
 BLA::Matrix<3> forwardKinematics(BLA::Matrix<3> angles);
-BLA::Matrix<3,3> estimateInitialJacobian();
+BLA::Matrix<3,3> estimateInitialJacobian(Adafruit_PWMServoDriver &pwm);
 BLA::Matrix<3,3> recomputeJacobian(BLA::Matrix<3> angles);
-bool newton(BLA::Matrix<3> P_tgt, int max_iter, float threshold);
-
-// DUMMY FUNCTION TO BE REPLACED
-void temp_move_motors(BLA::Matrix<3> angles) {
-    // REMOVED FOR NOW    
-}
-
-// DUMMY FUNCTION TO BE REPLACED
-BLA::Matrix<3> temp_get_motor_angles() {
-    return BLA::Matrix<3>{1., 2., 3.};
-}
+bool newton(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> P_tgt, int max_iter, float threshold);
 
 #endif
