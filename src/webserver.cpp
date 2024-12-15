@@ -1,67 +1,186 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+#include <WiFi.h>
+#include <WebServer.h>
+#include <cstdlib>
 
-const char* ssid = "Jasmine";
+// NOTE: You will have to configure this manually. If you are on a public network,
+// then it would be better to create a hotspot to connect to.
+#include "headers/webserver.h"
+#include "headers/secrets.h"
+#include "headers/webserver_style.h"
 
-ESP8266WebServer server(80); // server on port 80
+WebServer server(80); // port 80
 
-// Variables to hold the five values
-String base = "0";
-String elbow = "0";
-String wrist = "0";
+char armsBuffer[64];
+// Raw, read-only data from the server. Differentiated to 
+float v0, v1, v2;
 
+float X, Y, Z;
+float base, elbow, wrist;
+
+bool grab, useXYZ;
+
+/// @brief Handles the root endpoint. Values are defined as `v0`, `v1`, and `v2`
+/// as either joint angles OR coordinates of the end effector.
 void handleRoot() {
-  String message;
+    String message;
+
+    if (server.hasArg("v0")) v0 = server.arg("v0").toFloat();
+    if (server.hasArg("v1")) v1 = server.arg("v1").toFloat();
+    if (server.hasArg("v2")) v2 = server.arg("v2").toFloat();
+
+    // Unpack raw values v0, v1, v2.
+    // If we are not debugging the webserver by itself, then we unpack v0, v1, v2
+    // AFTER the HTML response is sent. 
+    #ifdef USE_WEBSERVER_STANDALONE
+    if (useXYZ) {
+        X = v0;
+        Y = v1;
+        Z = v2;
+    } else {
+        base = v0;
+        elbow = v1;
+        wrist = v2;
+    }
+    #endif
+
+    // Mode is handled separately with a different endpoint.
+    grab = server.hasArg("grab") && server.arg("grab") == "1";
+
+    message = "<html><head><title>CMPUT 312 3DOF Arm Controller</title>"
+              "<link rel='shortcut icon' href='#'>"
+              "<link rel='stylesheet' href='styles.css'>"
+              "<script>"
+              "function toggleMode() {"
+              "  const mode = document.getElementById('mode-toggle').checked ? 1 : 0;"
+              "  fetch('/toggleMode?use_xyz=' + mode)"
+              "    .then(response => response.text())"
+              "    .then(data => {"
+              "      const isXYZ = mode === 1;"
+              "      document.getElementById('label-v0').innerText = isXYZ ? 'X: ' : 'Base: ';"
+              "      document.getElementById('label-v1').innerText = isXYZ ? 'Y: ' : 'Elbow: ';"
+              "      document.getElementById('label-v2').innerText = isXYZ ? 'Z: ' : 'Wrist: ';"
+              "    })"
+              "    .catch(err => console.error('Error updating mode:', err));"
+              "}"
   
-  // Check if each value parameter is in the URL and update variables
-  if (server.hasArg("base")) base = server.arg("base");
-  if (server.hasArg("elbow")) elbow = server.arg("elbow");
-  if (server.hasArg("wrist")) wrist = server.arg("wrist");
-
-  // Display received values in Serial Monitor
-  Serial.println("Received values:");
-  Serial.println("Base motor angle: " + base);
-  Serial.println("Elbow motor angle: " + elbow);
-  Serial.println("Wrist motor angle: " + wrist);
-
-  // Send the values serially to Arduino
-  Serial.print(base + "," + elbow + "," + wrist + "," + vexArm + "," + flipArm + "\n");
-
-  // Create HTML form for submitting values
-  message = "<form method='GET' action='/'>";
-  message += "<label>Base motor angle: </label><input type='text' name='base' placeholder='Enter Left wheel'><br>";
-  message += "<label>Elbow motor angle: </label><input type='text' name='elbow' placeholder='Enter Right wheel'><br>";
-  message += "<label>Wrist motor angle: </label><input type='text' name='wrist' placeholder='Enter Stepper Arm'><br>";
-  message += "<input type='submit' value='Send'>";
-  message += "</form>";
-
-  // Send response with form and message
-  server.send(200, "text/html", message);
+              "let grabState = " + String(grab ? "true" : "false") + ";"
+              "function toggleGrab() {"
+              "  grabState = !grabState;"
+              "  document.getElementById('grab-button').innerText = grabState ? 'Grab: ON' : 'Grab: OFF';"
+              "  document.getElementById('grab-input').value = grabState ? '1' : '0';"
+              "}"
+  
+              // Continually fetch internal data from the arm.
+              "function updateInfo() {"
+              "  fetch('/getInfo')"
+              "    .then(response => response.json())"
+              "    .then(data => {"
+              "      document.getElementById('p-v0').innerText = (data.use_xyz_mode ? 'X: ' : 'Base: ')  + data.v0;"
+              "      document.getElementById('p-v1').innerText = (data.use_xyz_mode ? 'Y: ' : 'Elbow: ') + data.v1;"
+              "      document.getElementById('p-v2').innerText = (data.use_xyz_mode ? 'Z: ' : 'Wrist: ') + data.v2;"
+              "      document.getElementById('p-grab').innerText = 'Grab: ' + (data.grab ? 'ON' : 'OFF');"
+              "    })"
+              "    .catch(err => console.error('Error fetching telemetry:', err));"
+              "}"
+  
+              "setInterval(updateInfo, 750);"
+              "window.onload = () => {updateInfo();};"
+              "</script>"
+  
+              "</head><body>"
+              "<h1>3DOF Arm Control</h1>"
+              "<div id='control-container'>"
+              "<label>Use XYZ?</label>"
+              "<input type='checkbox' id='mode-toggle' onclick='toggleMode()' " + 
+              String(useXYZ ? "checked" : "") + "><br>"
+              "<form method='GET' action='/'>"
+              "<label id='label-v0'>" + String(useXYZ ? "X: " : "Base: ") + 
+              "</label><input type='number' name='v0' step='0.1' value='" + String(v0) + "'><br>"
+              "<label id='label-v1'>" + String(useXYZ ? "Y: " : "Elbow: ") + 
+              "</label><input type='number' name='v1' step='0.1' value='" + String(v1) + "'><br>"
+              "<label id='label-v2'>" + String(useXYZ ? "Z: " : "Wrist: ") + 
+              "</label><input type='number' name='v2' step='0.1' value='" + String(v2) + "'><br>"
+              "<button type='button' id='grab-button' onclick='toggleGrab()'>Grab: " + (grab ? "ON" : "OFF") + "</button><br>"
+              "<input type='hidden' name='grab' id='grab-input' value='" + String(grab ? "1" : "0") + "'>"
+              "<input type='submit' value='Send'>"
+              "</form>"
+              "</div>"
+              "<h2>Telemetry</h2>"
+              "<div id='information-container'>"
+              "<p id='p-v0'></p>"
+              "<p id='p-v1'></p>"
+              "<p id='p-v2'></p>"
+              "<p id='p-grab'></p>"
+              "</div>"
+              "</body></html>";
+  
+    server.send(200, "text/html", message);
 }
 
+/// @brief Handler to fetch arm info from the ESP32. Values are continuously
+/// read, and updated from the robot arm.
+void handleGetInfo() {
+    String json = "{\"v0\": " + String(useXYZ ? X : base) + ", "
+                   "\"v1\": " + String(useXYZ ? Y : elbow) + ", "
+                   "\"v2\": " + String(useXYZ ? Z : wrist) + ", "
+                   "\"grab\": " + String(grab ? "true" : "false") + ", "
+                   "\"use_xyz_mode\": " + String(useXYZ ? "true" : "false") + "}";
+    server.send(200, "application/json", json);
+}
+
+/// @brief Handler for toggling the mode to send data.
+/// if the user toggles the mode from the UI it should be
+/// expected that the telemetry values change? or just display both of them.
+void handleToggleMode() {
+    if (server.hasArg("use_xyz")) {
+        useXYZ = server.arg("use_xyz") == "1";
+        server.send(200, "text/plain", "Mode updated.");
+    } else {
+        server.send(400, "text/plain", "Invalid request.");
+    }
+}
+
+/// @brief Handler to poll the style sheet.
+void handleStyling() {
+    server.send(200, "text/css", style);
+}
+
+void initWebServer() {
+    // Connect to Wi-Fi
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    Serial.print("Connecting to Wi-Fi.");
+
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.println("\nConnected to Wi-Fi!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP()); // Open this up in your browser.
+
+    server.on("/", handleRoot);
+    server.on("/getInfo", handleGetInfo);
+    server.on("/toggleMode", handleToggleMode);
+    server.on("/styles.css", handleStyling);
+
+    server.begin();                
+    Serial.println("Server started. Listening for angles.\n");
+}
+
+void handleWebServer() {
+    server.handleClient();  // Listen for incoming clients
+}
+
+// If we are debugging the web server, standalone.
+#ifdef USE_WEBSERVER_STANDALONE
 void setup() {
-  Serial.begin(9600);
-  
-  // Connect to Wi-Fi
-  WiFi.begin(ssid);
-  Serial.print("Connecting to Wi-Fi");
-  
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("\nConnected to Wi-Fi!");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-
-  // Set up server routes
-  server.on("/", handleRoot);    // Define the root endpoint
-  server.begin();                // Start the server
-  Serial.println("HTTP server started");
+    Serial.begin(115200);
+    initWebServer();
 }
 
 void loop() {
-  server.handleClient();  // Listen for incoming clients
+    handleWebServer();
 }
+#endif
