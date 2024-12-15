@@ -3,11 +3,10 @@
 
 # Software:
 **Testing:**
-- **Motor sweeping:** *sweep.cpp* Moves motors back and forth in a loop. Arm rotates back and forth and bends elbow
-- **LCD screen:** *helloLCD.cpp* Prints 'hello world' to the LCD screen on board
-- **Server:** *servertest.cpp* Sends values to the esp32 board and displays it on the LCD screen
+- **Motor sweeping:** *PWMtest.ino* Moves motors back and forth in a loop. Arm rotates back and forth and bends elbow, prints 'moving forward' or 'moving backward' to the screen
+- **Encoder value printing to LCD** *MotorEncoderAndLCDTest.ino* Moves motors back and forth in a loop. Arm rotates back and forth and bends elbow, prints 'moving forward' or 'moving backward' to the screen
 
-**Source:**
+**Source:** NEEDS UPDATE
 - **Webserver:** *server.cpp* ESP32 host runs webserver and takes values sent via http by client (user on laptop)
 - **Forward Kinematics:** *fwdkin.cpp*, can run independently of webserver (hardcode values)
 - **Inverse Kinematics:** *invkin.cpp*, can run independently of webserver (hardcode values)
