@@ -1,5 +1,15 @@
 #include "headers/motors.h"
 
+/// @brief Moves all three motors by angles `delta_angles`.
+/// @param pwm PWM servo driver instance.
+/// @param delta_angles Angles for which to move the motors by.
+void moveMotors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles) {
+    for (int i = 0; i < delta_angles.Cols; i++) {
+        // Ideally if time permits, some kind of threading would be used here.
+        moveMotor(pwm, i, delta_angles(i));
+    }
+}
+
 /// @brief Moves an individual motor.
 /// @param pwm PWM servo driver instance.
 /// @param motor_no Motor number.
@@ -8,20 +18,10 @@ void moveMotor(Adafruit_PWMServoDriver &pwm, uint8_t motor_no, float degrees) {
     // TODO: move one individual motor by `degrees`. Waiting on encoder support and interfacing.
 }
 
-/// @brief Moves all three motors by angles `delta_angles`.
-/// @param pwm PWM servo driver instance.
-/// @param delta_angles Angles for which to move the motors by.
-void moveMotors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles) {
-    for (int i = 0; i < delta_angles.Cols; i++) {
-        // Ideally if time permits, threading would be used here.
-        moveMotor(pwm, i, delta_angles(i));
-    }
-}
-
 /// @brief Gets motor angles from the encoders.
 /// @return Motor angles.
 BLA::Matrix<3> getMotorAngles() {
-    // Waiting on encoder support and interfacing.
+    return BLA::Matrix<3> {base, elbow, wrist};
 }
 
 /// @brief Homes a singular motor.
@@ -45,4 +45,11 @@ void homeMotor(Adafruit_PWMServoDriver &pwm, Encoder& encoder, int indexPin, int
     encoder.write(0);
 
     delay(1000);
+}
+
+/// @brief Toggles grab state of the last motor.
+/// @param pwm PWM controller instance.
+/// @param grab Whether or not to release.
+void toggleGrab(Adafruit_PWMServoDriver &pwm, bool grab) {
+    // TODO: CLAMP DOWN OR RELEASE THE END EFFECTOR MOTOR DEPENDING ON THE VALUE OF `grab`
 }

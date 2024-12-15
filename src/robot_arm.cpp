@@ -29,8 +29,7 @@ BLA::Matrix<3> forwardKinematics(const BLA::Matrix<3> angles) {
 
 /// @brief Estimates the initial Jacobian using a predefined set of motor angles.
 /// @return The initial Jacobian estimate.
-BLA::Matrix<3,3> estimateInitialJacobian() {
-    // TODO: might need motor control reference
+BLA::Matrix<3,3> estimateInitialJacobian(Adafruit_PWMServoDriver &pwm) {
     BLA::Matrix<3, 3> J = BLA::Eye<3,3>();
 
     BLA::Matrix<3,3> delta_angles;
@@ -47,16 +46,16 @@ BLA::Matrix<3,3> estimateInitialJacobian() {
         0, 0, 6
     };
 
-    last_P = forwardKinematics(temp_get_motor_angles());
+    last_P = forwardKinematics(getMotorAngles());
 
     for (int i = 0; i < J.Cols; i++) {
-        temp_move_motors(
-            BLA::Matrix<3>{delta_angles(i, 0), delta_angles(i, 1), delta_angles(i, 2)}
-        );
-        P = forwardKinematics(temp_get_motor_angles());
-        dP = P - last_P;
 
         float delta_theta_i = delta_angles(i, i);
+        moveMotor(pwm, i, delta_theta_i);
+
+        P = forwardKinematics(getMotorAngles());
+        dP = P - last_P;
+
         J(0, i) = dP(0) / delta_theta_i;
         J(1, i) = dP(1) / delta_theta_i;
         J(2, i) = dP(2) / delta_theta_i;
@@ -78,7 +77,7 @@ BLA::Matrix<3,3> recomputeJacobian(const BLA::Matrix<3> angles) {
     float theta2 = angles(1) * DEG_TO_RAD;
     float theta3 = angles(2) * DEG_TO_RAD;
 
-    // simplification
+    // Simplification
     float c1 = cos(theta1), s1 = sin(theta1);
     float c2 = cos(theta2), s2 = sin(theta2);
     float c23 = cos(theta2 + theta3), s23 = sin(theta2 + theta3);
@@ -99,46 +98,46 @@ BLA::Matrix<3,3> recomputeJacobian(const BLA::Matrix<3> angles) {
 }
 
 /// @brief Performs Newton's method for inverse kinematics. 
+/// @param pwm Servo driver.
 /// @param P_tgt Target point.
 /// @param max_iter Max number of iterations allowed.
 /// @param threshold Error allowed in X units.
 /// @return Whether or not the movement was successful.
-bool newton(BLA::Matrix<3> P_tgt, int max_iter, float threshold = 2.5f) {
+bool newton(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> P_tgt, int max_iter, float threshold = 2.5f) {
 
     int k = 0;
     BLA::Matrix<3> E, P, Q, dQ; // error, end effector point, motor angles, delta
     BLA::Matrix<3, 3> J;
 
     Q = getMotorAngles();
-    J = estimateInitialJacobian();
+    J = estimateInitialJacobian(pwm);
 
     while (k < max_iter) {
 
-        // calculate the error
+        // Calculate error.
         P = forwardKinematics(Q);
         E = P_tgt - P;
 
-        // are we close enough to the target?
+        // Are we close enough to the target?
         if (calculateNorm(E) < threshold) {
-            Serial.println(String("Reached target in ") + k + String(" iterations!"));
+            Serial.println(String("Reached target in ") + k + String(" iterations!")); // TODO: Move this to an LCD display.
             return true;
         }
 
-        // get dQ from J
+        // Obtain the change in angles.
         if (isJacobianSingular(J)) {
-            Serial.println("Singular Jacobian!");
+            Serial.println("Singular Jacobian!"); // TODO: Move this to an LCD display.
             return false;
         } else {
             dQ = BLA::Inverse(J) * E;
         }
 
-        // move motors by dQ, then update the estimate of joint angles
-        // moveMotors(dQ);
+        // Move motors and update the estimate of joint angles.
+        moveMotors(pwm, dQ);
         Q += dQ;
-
-        J = recomputeJacobian(Q);
-                
+        J = recomputeJacobian(Q);        
         k++;
+
         delay(150);
     }
 

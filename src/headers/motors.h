@@ -26,9 +26,13 @@
 void moveMotor(Adafruit_PWMServoDriver &pwm, uint8_t motor_no, float degrees);
 void moveMotors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles);
 void homeMotor(Adafruit_PWMServoDriver &pwm, Encoder& encoder, int indexPin, int pwmChannel);
-
-extern long pos0, pos1, pos2;
-
+void grab(Adafruit_PWMServoDriver &pwm, bool grab);
 BLA::Matrix<3> getMotorAngles();
+
+// Encoder positions
+extern long pos1, pos2, pos3;
+extern Adafruit_PWMServoDriver pwm;
+extern float base, elbow, wrist;
+
 
 #endif

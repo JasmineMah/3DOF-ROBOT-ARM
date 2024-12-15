@@ -7,6 +7,9 @@
 extern bool grab, useXYZ;
 extern float v0, v1, v2;
 
+extern float X, Y, Z;
+extern float base, elbow, wrist;
+
 #ifdef USE_WEBSERVER_STANDALONE
 void setup();
 void loop();
@@ -14,5 +17,6 @@ void loop();
 
 void initWebServer();
 void handleWebServer();
+void unpackData();
 
 #endif
