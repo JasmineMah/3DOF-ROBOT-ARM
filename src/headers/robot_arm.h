@@ -7,6 +7,7 @@
 #include <Adafruit_PWMServoDriver.h>
 
 // Temporary linkage lengths that really should be remeasured, given in cm.
+// TODO: Remeasure these angles.
 const float L1 = 19.6;
 const float L2 = 19.6;
 const float L3 = 1.2345; // TO BE MEASURED

@@ -110,7 +110,7 @@ void handleRoot() {
 }
 
 /// @brief Handler to fetch arm info from the ESP32. Values are continuously
-/// read and updated from the robot arm itself here.
+/// read, and updated from the robot arm.
 void handleGetInfo() {
     String json = "{\"v0\": " + String(useXYZ ? X ?: NAN : base ?: NAN) + ", "
                    "\"v1\": " + String(useXYZ ? Y ?: NAN : elbow ?: NAN) + ", "

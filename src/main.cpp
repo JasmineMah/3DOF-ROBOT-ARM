@@ -60,14 +60,13 @@ void handleCommand() {
         BLA::Matrix<3> deltaAngles = targetAngles - BLA::Matrix<3>{base, elbow, wrist};
         moveMotors(pwm, deltaAngles);
     }
-
-    if (grab) {
-        
-    }
+    
+    toggleGrab(pwm, grab);
 }
 
 float convertEncoderReadingToAngle(long rawEncoderReading) {
     // TODO: Convert raw encoder readings to joint angles that we can work with.
+    // Need more information on converting input degrees to encoder positions.
     return (float) rawEncoderReading;
 }
 
@@ -90,4 +89,3 @@ void loop() {
     Y = endEffectorXYZ(1);
     Z = endEffectorXYZ(2);
 }
-
