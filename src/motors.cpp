@@ -14,8 +14,9 @@ void moveMotors(Adafruit_PWMServoDriver &pwm, BLA::Matrix<3> delta_angles) {
 /// @param pwm PWM servo driver instance.
 /// @param motor_no Motor number.
 /// @param degrees Degrees to offset.
-void moveMotor(Adafruit_PWMServoDriver &pwm, uint8_t motor_no, float degrees) {
-    // TODO: move one individual motor by `degrees`. Waiting on encoder support and interfacing.
+void moveMotor(Adafruit_PWMServoDriver &pwm, int motor_no, float degrees) {
+    // TODO: move one individual motor by `degrees`.
+    // Need more information on converting input degrees to encoder positions.
 }
 
 /// @brief Gets motor angles from the encoders.
